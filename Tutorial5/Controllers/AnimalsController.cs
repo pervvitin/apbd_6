@@ -65,4 +65,47 @@ public class AnimalsController : ControllerBase
         
         return Created("", null);
     }
+   
+    [HttpPut("{idAnimal}")]
+    public async Task<IActionResult> UpdateAnimal(int idAnimal, [FromBody] Animal animal)
+    {
+        if (animal == null || idAnimal != animal.IdAnimal)
+        {
+            return BadRequest("Invalid data or animal ID.");
+        }
+
+        using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
+        connection.Open();     
+        using SqlCommand command = new SqlCommand();
+        command.Connection = connection;
+        command.CommandText =
+            "UPDATE Animals SET Name = @Name, Description = @Description, Category = @Category, Area = @Area WHERE Id = @Id;";
+            command.Parameters.AddWithValue("@Id", idAnimal);
+            command.Parameters.AddWithValue("@Name", animal.Name);
+            command.Parameters.AddWithValue("@Description", animal.Description);
+            command.Parameters.AddWithValue("@Category", animal.Category);
+            command.Parameters.AddWithValue("@Area", animal.Area);
+               
+
+             command.ExecuteNonQuery();
+            return Created("", null);
+
+    }
+
+    [HttpDelete("{idAnimal}")]
+    public async Task<IActionResult> DeleteAnimal(int idAnimal)
+    {
+        using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
+        connection.Open();
+        using SqlCommand command = new SqlCommand();
+        command.Connection = connection;
+        command.CommandText = "DELETE FROM Animals WHERE Id = @Id;";
+        
+            command.Parameters.AddWithValue("@Id", idAnimal);
+            await command.ExecuteNonQueryAsync();
+        
+            command.ExecuteNonQuery();
+
+        return NoContent();
+    }
 }
